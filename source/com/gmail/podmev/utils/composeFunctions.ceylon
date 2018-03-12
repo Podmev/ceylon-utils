@@ -45,6 +45,6 @@ object composedHeuristic satisfies Heuristic {
 }
 
 shared void run1() {
-		
+		print("1");
 	
 }
