@@ -16,6 +16,16 @@ String classDeclarationLit =
             shared void foo(){
                 value a = 3;
                 print(a);
+                switch(a)
+                case(is Integer){
+                    print("22");
+                }
+                case(3){
+                    print("33");
+                }
+                else{
+                    print("--");
+                }
             }
            }
            """;
@@ -27,8 +37,8 @@ shared void run() {
     assert(exists Declaration classDeclaration = compilationUnit.declarations.first);
     //print(classDeclaration.name);
     assert(is ClassDefinition classDeclaration);
-   // print(classDeclaration);
-    print(findValues(classDeclaration).size);
+   print(classDeclaration);
+    //print(findValues(classDeclaration).size);
     //print(getStringFieldValue(classDeclaration, "localCode"));
 }
 

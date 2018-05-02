@@ -13,8 +13,18 @@ import ceylon.ast.core {
     UIdentifier,
     Block
 }
+import ceylon.ast.redhat {
+    RedHatTransformer,
+    SimpleTokenFactory
+}
 import ceylon.collection {
     ArrayList
+}
+import ceylon.formatter {
+    format
+}
+import ceylon.language.meta {
+    type
 }
 import ceylon.language.meta.declaration {
     ClassOrInterfaceDeclaration,
@@ -25,14 +35,33 @@ import ceylon.language.meta.declaration {
     OpenClassOrInterfaceType,
     nothingType
 }
-import ceylon.language.meta {
-    type
+
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree
+}
+""
+shared void printFullSwitchForNode(){
+    printFullSwitch(`class Node`, "node");
+}
+
+void printFullSwitch(ClassOrInterfaceDeclaration classOrInterfaceDeclaration, String variableName){
+    assert (exists SwitchCaseElse switchCaseElse = switchGeneratorByClassOrInterfaceDeclaration(classOrInterfaceDeclaration, variableName));
+    //RedHatTransformer.transformCompilationUnit(switchCaseElse); для другого случая
+    Tree.Statement transformSwitchCaseElse = RedHatTransformer(SimpleTokenFactory()).transformSwitchCaseElse(switchCaseElse);
+    format {
+        node = transformSwitchCaseElse;
+    };
 }
 
 "Формирует ast дерево вложенных switch по всем типам на основе дерева наследований объекта [[obj]]"
 SwitchCaseElse? switchGenerator(Object obj, String variableName){
     ClassDeclaration classDeclaration  = type(obj).declaration;
-    TreeNode<ClassOrInterfaceDeclaration> typeTree = createTypeTree(classDeclaration);
+    return switchGeneratorByClassOrInterfaceDeclaration(classDeclaration, variableName);
+}
+
+"Формирует ast дерево вложенных switch по всем типам на основе дерева наследований декларации  [[classOrInterfaceDeclaration]]"
+SwitchCaseElse? switchGeneratorByClassOrInterfaceDeclaration(ClassOrInterfaceDeclaration classOrInterfaceDeclaration, String variableName){
+    TreeNode<ClassOrInterfaceDeclaration> typeTree = createTypeTree(classOrInterfaceDeclaration);
     return switchGeneratorByTree(typeTree, variableName);
 }
 
@@ -50,7 +79,7 @@ SwitchCaseElse? switchGeneratorByTree(TreeNode<ClassOrInterfaceDeclaration> type
                 for(child in children)
                     CaseClause {
                         caseItem = IsCase(BaseType(TypeNameWithTypeArguments(UIdentifier(child.node.name)))); //возможно ошибка если есть синглетоны как enum
-                        //блок пустой если у ребёнка нед подтипов. иначе вложенный switch
+                        //блок пустой, если у ребёнка нет подтипов. иначе вложенный switch
                         block = Block{
                             content =
                                 (if(exists childSwitchCaseElse = switchGeneratorByTree(child, variableName))
@@ -143,5 +172,6 @@ shared void run(){
         nodeTypeString = ClassOrInterfaceDeclaration.name;
     };
     print("->".join(findRelations(`class Node`, `class SwitchCases`)*.name));
-    print(switchGeneratorByTree(typeTree, "node"));
+    print("->".join(findRelations(`class Node`, `class SwitchCaseElse`)*.name));
+    //print(switchGeneratorByTree(typeTree, "node"));
 }
