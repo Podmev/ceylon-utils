@@ -27,8 +27,9 @@ shared void run() {
     assert(exists Declaration classDeclaration = compilationUnit.declarations.first);
     //print(classDeclaration.name);
     assert(is ClassDefinition classDeclaration);
-    print(classDeclaration);
-    print(getStringFieldValue(classDeclaration, "localCode"));
+   // print(classDeclaration);
+    print(findValues(classDeclaration).size);
+    //print(getStringFieldValue(classDeclaration, "localCode"));
 }
 
 //TODO можно сделать кодогенератор разбора кейсов
