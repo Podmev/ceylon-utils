@@ -9,9 +9,15 @@ import ceylon.language.meta.declaration {
     OpenIntersection,
     nothingType
 }
-void switchGenerator() {
+import ceylon.ast.core {
+    Node
 }
-"Создание дерева of для классов и нтерфейсов"
+"Через рекурсию"
+void switchGenerator(TreeNode<ClassOrInterfaceDeclaration> typeTree) {
+    //if()
+}
+
+"Создание дерева of для классов и интерфейсов"
 TreeNode<ClassOrInterfaceDeclaration> createTypeTree(ClassOrInterfaceDeclaration classOrInterfaceDeclaration){
     MutableTreeNode<ClassOrInterfaceDeclaration> mutableTreeNode =
             MutableTreeNode<ClassOrInterfaceDeclaration>(classOrInterfaceDeclaration);
@@ -56,4 +62,23 @@ TreeNode<NodeType> toImmutableTree<NodeType>(MutableTreeNode<NodeType> mutableTr
         return TreeNode(mutableTreeRoot.node, []);
     }
     return TreeNode(mutableTreeRoot.node, (mutableTreeRoot.childrenArray.collect(toImmutableTree)));
+}
+
+"рапечатка дерева"
+void printTreeNode<NodeType>(
+        TreeNode<NodeType> treeNode,
+        String nodeTypeString(NodeType nodeType),
+        Integer depth = 0){
+    print("\t".repeat(depth)+"-" +nodeTypeString(treeNode.node));
+    for(child in treeNode.children){
+        printTreeNode(child, nodeTypeString, depth + 1);
+    }
+}
+
+shared void run(){
+    TreeNode<ClassOrInterfaceDeclaration> typeTree = createTypeTree(`class Node`);
+    printTreeNode {
+        treeNode = typeTree;
+        nodeTypeString = ClassOrInterfaceDeclaration.name;
+    };
 }
