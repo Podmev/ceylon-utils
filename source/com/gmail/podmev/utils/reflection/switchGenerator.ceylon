@@ -1,26 +1,68 @@
 import ceylon.ast.core {
+    SwitchCases,
+    SwitchCaseElse,
+    SwitchClause,
+    BaseExpression,
+    MemberNameWithTypeArguments,
+    LIdentifier,
     Node,
-    SwitchCases
+    CaseClause,
+    IsCase,
+    BaseType,
+    TypeNameWithTypeArguments,
+    UIdentifier,
+    Block
 }
 import ceylon.collection {
     ArrayList
 }
 import ceylon.language.meta.declaration {
     ClassOrInterfaceDeclaration,
-    OpenClassOrInterfaceType,
+    ClassDeclaration,
     OpenTypeVariable,
     OpenUnion,
     OpenIntersection,
-    nothingType,
-    ClassDeclaration
+    OpenClassOrInterfaceType,
+    nothingType
 }
-//"Через рекурсию"
-//SwitchCases switchGenerator(TreeNode<ClassOrInterfaceDeclaration> typeTree) {
-//    if(typeTree.children.empty){
-//        SwitchCases switchCases = SwitchCases( , null);
-//    }
-//    return nothing;
-//}
+import ceylon.language.meta {
+    type
+}
+
+"Формирует ast дерево вложенных switch по всем типам на основе дерева наследований объекта [[obj]]"
+SwitchCaseElse? switchGenerator(Object obj, String variableName){
+    ClassDeclaration classDeclaration  = type(obj).declaration;
+    TreeNode<ClassOrInterfaceDeclaration> typeTree = createTypeTree(classDeclaration);
+    return switchGeneratorByTree(typeTree, variableName);
+}
+
+"Формирует ast дерево вложенных switch по всем типам на основе дерева наследований
+ Через рекурсию"
+SwitchCaseElse? switchGeneratorByTree(TreeNode<ClassOrInterfaceDeclaration> typeTree, String variableName) {
+    TreeNode<ClassOrInterfaceDeclaration>[] children = typeTree.children;
+    if(!nonempty children){
+        return null;
+    }
+    SwitchCaseElse switchCaseElse = SwitchCaseElse{
+        clause = SwitchClause(BaseExpression(MemberNameWithTypeArguments(LIdentifier(variableName))));
+        cases = SwitchCases{
+            caseClauses = [
+                for(child in children)
+                    CaseClause {
+                        caseItem = IsCase(BaseType(TypeNameWithTypeArguments(UIdentifier(child.node.name)))); //возможно ошибка если есть синглетоны как enum
+                        //блок пустой если у ребёнка нед подтипов. иначе вложенный switch
+                        block = Block{
+                            content =
+                                (if(exists childSwitchCaseElse = switchGeneratorByTree(child, variableName))
+                                then [childSwitchCaseElse]
+                                else []);
+                        };
+                    }
+            ];
+        };
+    };
+    return switchCaseElse;
+}
 
 "Построения цепояки от прародителя [[superClass]] до наследника [[classDeclaration]] по extends type'ам
  может упасть"
@@ -101,4 +143,5 @@ shared void run(){
         nodeTypeString = ClassOrInterfaceDeclaration.name;
     };
     print("->".join(findRelations(`class Node`, `class SwitchCases`)*.name));
+    print(switchGeneratorByTree(typeTree, "node"));
 }
