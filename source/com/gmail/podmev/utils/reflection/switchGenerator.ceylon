@@ -1,3 +1,7 @@
+import ceylon.ast.core {
+    Node,
+    SwitchCases
+}
 import ceylon.collection {
     ArrayList
 }
@@ -7,14 +11,29 @@ import ceylon.language.meta.declaration {
     OpenTypeVariable,
     OpenUnion,
     OpenIntersection,
-    nothingType
+    nothingType,
+    ClassDeclaration
 }
-import ceylon.ast.core {
-    Node
-}
-"Через рекурсию"
-void switchGenerator(TreeNode<ClassOrInterfaceDeclaration> typeTree) {
-    //if()
+//"Через рекурсию"
+//SwitchCases switchGenerator(TreeNode<ClassOrInterfaceDeclaration> typeTree) {
+//    if(typeTree.children.empty){
+//        SwitchCases switchCases = SwitchCases( , null);
+//    }
+//    return nothing;
+//}
+
+"Построения цепояки от прародителя [[superClass]] до наследника [[classDeclaration]] по extends type'ам
+ может упасть"
+ClassDeclaration[] findRelations(
+        ClassDeclaration superClass,
+        ClassDeclaration classDeclaration
+        ){
+    if(classDeclaration==superClass){
+        return [superClass];
+    }
+    assert (exists extendedType = classDeclaration.extendedType);
+    ClassDeclaration extendedClass = extendedType.declaration;
+    return findRelations(superClass, extendedClass).withTrailing(classDeclaration);
 }
 
 "Создание дерева of для классов и интерфейсов"
@@ -64,7 +83,7 @@ TreeNode<NodeType> toImmutableTree<NodeType>(MutableTreeNode<NodeType> mutableTr
     return TreeNode(mutableTreeRoot.node, (mutableTreeRoot.childrenArray.collect(toImmutableTree)));
 }
 
-"рапечатка дерева"
+"распечатка дерева"
 void printTreeNode<NodeType>(
         TreeNode<NodeType> treeNode,
         String nodeTypeString(NodeType nodeType),
@@ -81,4 +100,5 @@ shared void run(){
         treeNode = typeTree;
         nodeTypeString = ClassOrInterfaceDeclaration.name;
     };
+    print("->".join(findRelations(`class Node`, `class SwitchCases`)*.name));
 }
