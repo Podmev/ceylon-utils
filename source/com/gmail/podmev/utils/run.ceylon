@@ -4,6 +4,9 @@ import ceylon.ast.core {
 import ceylon.ast.redhat {
     parseCompilationUnit
 }
+import ceylon.collection {
+    ArrayList
+}
 String classDeclarationLit =
         """
            shared class MyError(Claim claim) satisfies Error{
@@ -38,11 +41,84 @@ shared void run() {
     //print(classDeclaration.name);
     assert(is ClassDefinition classDeclaration);
    print(classDeclaration);
-    //print(findValues(classDeclaration).size);
+   print(findValues(classDeclaration).size);
+   print(findNumberOfValuesByVisitor(classDeclaration));
+   print(findValuesByVisitor(classDeclaration).size);
     //print(getStringFieldValue(classDeclaration, "localCode"));
 }
 
-//TODO можно сделать кодогенератор разбора кейсов
+"Посчитать количество value в ноде через visitor"
+shared Integer findNumberOfValuesByVisitor(Node node) {
+    variable Integer valueCount = 0;
+    object visitor satisfies Visitor{
+            shared actual void visitValueDefinition(ValueDefinition valueDefinition){
+                if(is ValueModifier type = valueDefinition.type) {
+                    valueCount++;
+                }
+                valueDefinition.visitChildren(this);
+            }
+            shared actual void visitValueGetterDefinition(ValueGetterDefinition valueGetterDefinition){
+                if(is ValueModifier type = valueGetterDefinition.type) {
+                    valueCount++;
+                }
+                valueGetterDefinition.visitChildren(this);
+            }
+            shared actual void visitValueArgument(ValueArgument valueArgument){
+                if(is ValueModifier type = valueArgument.type) {
+                    valueCount++;
+                }
+                valueArgument.visitChildren(this);
+            }
+    }
+    node.visit(visitor);
+    return valueCount;
+}
+
+shared object parentSetterVisitor satisfies Visitor{
+    shared actual void visitNode(Node node){
+        super.visitNode(node);
+        for(child in node.children){
+            child.data = node; //записываем родителя в data
+        }
+    }
+}
+//TODO можно сделать оптимизацию: хранить родителя или уже всю цепочку
+"Получить иерархию ноды, если родителя неявно проставлены через [[Node.data]]"
+[Node+] getHeirarchy(Node node){
+    Anything data = node.data;
+    if(!exists data){
+        return [node];
+    }
+    assert (is Node parentNode = data);
+    return getHeirarchy(parentNode).withTrailing(node);
+}
+
+shared [Node+][] findValuesByVisitor(Node node) {
+    ArrayList<Node> valueNodes = ArrayList<Node>();
+    object valueVisitor satisfies Visitor{
+        shared actual void visitValueDefinition(ValueDefinition valueDefinition){
+            if(is ValueModifier type = valueDefinition.type) {
+                valueNodes.add(valueDefinition);
+            }
+            super.visitValueDefinition(valueDefinition);
+        }
+        shared actual void visitValueGetterDefinition(ValueGetterDefinition valueGetterDefinition){
+            if(is ValueModifier type = valueGetterDefinition.type) {
+                valueNodes.add(valueGetterDefinition);
+            }
+            super.visitValueGetterDefinition(valueGetterDefinition);
+        }
+        shared actual void visitValueArgument(ValueArgument valueArgument){
+            if(is ValueModifier type = valueArgument.type) {
+                valueNodes.add(valueArgument);
+            }
+            super.visitValueArgument(valueArgument);
+        }
+    }
+    node.visit(parentSetterVisitor);
+    node.visit(valueVisitor);
+    return  valueNodes.collect(getHeirarchy);
+}
 
 <Node[]>[] findValues(Node node, Node[] nodeHeirararchy = []){
     [Node+] childNodeHeirarchy => nodeHeirararchy.withTrailing(node);
