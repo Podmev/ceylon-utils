@@ -88,7 +88,8 @@ import ceylon.collection {
 }
 
 import com.gmail.podmev.utils.ast {
-    parentSetterVisitor
+    parentSetterVisitor,
+    getHeirarchy
 }
 
 "Посчитать количество value в ноде через visitor"
@@ -117,18 +118,8 @@ shared Integer findNumberOfValuesByVisitor(Node node) {
     node.visit(visitor);
     return valueCount;
 }
-
-//TODO можно сделать оптимизацию: хранить родителя или уже всю цепочку
-"Получить иерархию ноды, если родителя неявно проставлены через [[Node.data]]"
-[Node+] getHeirarchy(Node node){
-    Anything data = node.data;
-    if(!exists data){
-        return [node];
-    }
-    assert (is Node parentNode = data);
-    return getHeirarchy(parentNode).withTrailing(node);
-}
-
+see(`value parentSetterVisitor`,
+    `function getHeirarchy`)
 shared [Node+][] findValuesByVisitor(Node node) {
     ArrayList<Node> valueNodes = ArrayList<Node>();
     object valueVisitor satisfies Visitor{

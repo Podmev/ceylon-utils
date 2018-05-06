@@ -11,3 +11,14 @@ shared object parentSetterVisitor satisfies Visitor{
         }
     }
 }
+//TODO переименовать
+//TODO можно сделать оптимизацию: хранить родителя или уже всю цепочку
+"Получить иерархию ноды, если родителя неявно проставлены через [[Node.data]]"
+shared [Node+] getHeirarchy(Node node){
+    Anything data = node.data;
+    if(!exists data){
+        return [node];
+    }
+    assert (is Node parentNode = data);
+    return getHeirarchy(parentNode).withTrailing(node);
+}
