@@ -1,5 +1,7 @@
 import ceylon.ast.core {
-    ...
+    CompilationUnit,
+    Declaration,
+    ClassDefinition
 }
 import ceylon.ast.redhat {
     parseCompilationUnit
@@ -8,7 +10,8 @@ import ceylon.ast.redhat {
 import com.gmail.podmev.utils.astusage.analyse {
     findValues,
     findNumberOfValuesByVisitor,
-    findValuesByVisitor
+    findValuesByVisitor,
+    findMagicNumbers
 }
 String classDeclarationLit =
         """
@@ -43,9 +46,10 @@ shared void run() {
     assert(exists Declaration classDeclaration = compilationUnit.declarations.first);
     //print(classDeclaration.name);
     assert(is ClassDefinition classDeclaration);
-   print(classDeclaration);
-   print(findValues(classDeclaration).size);
-   print(findNumberOfValuesByVisitor(classDeclaration));
-   print(findValuesByVisitor(classDeclaration).size);
+    print(classDeclaration);
+    print(findValues(classDeclaration).size);
+    print(findNumberOfValuesByVisitor(classDeclaration));
+    print(findValuesByVisitor(classDeclaration).size);
+    print(findMagicNumbers(classDeclaration).size);
     //print(getStringFieldValue(classDeclaration, "localCode"));
 }
