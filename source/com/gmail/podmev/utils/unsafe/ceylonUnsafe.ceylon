@@ -4,7 +4,12 @@ import ceylon.language.meta {
 import ceylon.language.meta.model {
     Type,
     ClassModel,
-    Method
+    Method,
+    Attribute
+}
+
+import com.redhat.ceylon.compiler.java.metadata {
+    method
 }
 shared object ceylonUnsafe {
     //TODO добавить обработки исключений
@@ -98,11 +103,45 @@ shared object ceylonUnsafe {
         ReturnType result = method(entity).apply(*args);
         return result;
     }
+
+    "Достать значение атрибута(поля) [[attributeName]] (объявленного в данном классе) из объекта [[entity]]
+     Внимание: Если поле приватное и нигде не используется, то оно не достанется
+     "
+    see(`function ClassModel.getDeclaredAttribute`)
+    tagged("attribute", "declared", "getter")
+    shared AttributeGetType getDeclaredAttribute<ContainerType, AttributeGetType, AttributeSetType=Nothing>(
+            ContainerType entity,
+            String attributeName){
+
+        ClassModel<ContainerType,Nothing> classModel = type(entity);
+        Attribute<ContainerType,AttributeGetType,AttributeSetType>? attribute =
+                classModel.getDeclaredAttribute<ContainerType, AttributeGetType, AttributeSetType>(attributeName);
+        assert (exists attribute);
+        AttributeGetType result = attribute(entity).get();
+        return result;
+    }
+
+    "Достать значение атрибута(поля) [[attributeName]] (объявленного в данном классе или предке) из объекта [[entity]]
+     Внимание: Если поле приватное и нигде не используется, то оно не достанется"
+    see(`function ClassModel.getAttribute`)
+    tagged("attribute", "getter")
+    shared AttributeGetType getAttribute<ContainerType, AttributeGetType, AttributeSetType=Nothing>(
+            ContainerType entity,
+            String attributeName){
+
+        ClassModel<ContainerType,Nothing> classModel = type(entity);
+        Attribute<ContainerType,AttributeGetType,AttributeSetType>? attribute =
+                classModel.getAttribute<ContainerType, AttributeGetType, AttributeSetType>(attributeName);
+        assert (exists attribute);
+        AttributeGetType result = attribute(entity).get();
+        return result;
+    }
 }
 
 class A(){
+    String s = "123";
     void foo() {
-        print("private");
+        print("private```s``");
     }
 
     void foo2(Integer i) {
@@ -116,7 +155,8 @@ class A(){
 
 shared void runCeylonUnsafe(){
     A a = A();
-    ceylonUnsafe.invokeDeclaredVoidMethod(a, "foo", []);
-    ceylonUnsafe.invokeDeclaredVoidMethod(a, "foo2", [], 1);
-    print(ceylonUnsafe.invokeDeclaredMethod<A,Integer,[Integer,String]>(a, "bar", [], 2, "123"));
+//    ceylonUnsafe.invokeDeclaredVoidMethod(a, "foo", []);
+//    ceylonUnsafe.invokeDeclaredVoidMethod(a, "foo2", [], 1);
+//    print(ceylonUnsafe.invokeDeclaredMethod<A,Integer,[Integer,String]>(a, "bar", [], 2, "123"));
+    print(ceylonUnsafe.getDeclaredAttribute<A, String>(a, "s"));
 }
