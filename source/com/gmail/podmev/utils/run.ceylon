@@ -6,12 +6,16 @@ import ceylon.ast.core {
 import ceylon.ast.redhat {
     parseCompilationUnit
 }
+import ceylon.language.meta {
+    type
+}
 
 import com.gmail.podmev.utils.astusage.analyse {
     findValues,
     findNumberOfValuesByVisitor,
     findValuesByVisitor,
-    findMagicNumbers
+    findMagicNumbers,
+    findShortVariables
 }
 String classDeclarationLit =
         """
@@ -24,6 +28,7 @@ String classDeclarationLit =
 
             shared void foo(){
                 value a = 3;
+                value val = 4;
                 print(a);
                 switch(a)
                 case(is Integer){
@@ -49,7 +54,10 @@ shared void run() {
     print(classDeclaration);
     print(findValues(classDeclaration).size);
     print(findNumberOfValuesByVisitor(classDeclaration));
-    print(findValuesByVisitor(classDeclaration).size);
-    print(findMagicNumbers(classDeclaration).size);
-    //print(getStringFieldValue(classDeclaration, "localCode"));
+    print("values : ``findValuesByVisitor(classDeclaration).size``");
+    print("magic numbers: ``findMagicNumbers(classDeclaration).size``");
+    print("short variables: ``findShortVariables(classDeclaration).size``");
+    for(index->path in findShortVariables(classDeclaration).indexed) {
+        print("``index`` short variable: ``"->".join(path.exceptLast.collect(type)*.declaration*.name)``->``path.last``");
+    }
 }
