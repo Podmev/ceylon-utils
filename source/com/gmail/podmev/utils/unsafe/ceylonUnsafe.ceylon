@@ -136,6 +136,8 @@ shared object ceylonUnsafe {
         AttributeGetType result = attribute(entity).get();
         return result;
     }
+
+    //TODO можно написать сеттеры
 }
 
 class A(){

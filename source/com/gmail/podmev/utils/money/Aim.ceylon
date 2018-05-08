@@ -2,9 +2,12 @@ shared class Aim(
         shared String englishDescription,
         shared String description,
         shared Integer finalSum,
-        shared Integer basePriority
+        shared Integer basePriority,
+        shared Float? fixedPart = null
         ) satisfies Comparable<Aim>{
-
+    if(exists fixedPart){
+        assert(0.0<fixedPart<1.0);
+    }
     shared actual Comparison compare(Aim other) =>
         orderedComparisons(other).find((e)=>e!=equal) else equal;
 

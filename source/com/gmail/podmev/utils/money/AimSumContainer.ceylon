@@ -2,7 +2,7 @@ import ceylon.collection {
     MutableMap,
     HashMap
 }
-class AimSumConatiner([Aim+] aims){
+class AimSumContainer([Aim+] aims){
     MutableMap<Aim, Integer> sumsByAims = HashMap<Aim, Integer>{entries ={for (aim in aims) aim->0};};
 
     shared void addSum(Aim aim, Integer sum){
