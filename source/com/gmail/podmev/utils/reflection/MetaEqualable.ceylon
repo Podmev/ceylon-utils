@@ -1,11 +1,7 @@
-import ceylon.language.meta {
-    type
-}
-
 import com.gmail.podmev.utils {
     equalsWithNull
 }
-
+//TODO можно два других интерфейса по аннотациям includeInEquals excludeInEquals
 "интерфейс, который позволяет не задавать equals и hash
  Так получилось, чо без Identifiable не работает
 
@@ -25,25 +21,31 @@ see(
 )
 tagged("hasTests")
 shared interface MetaEqualable<Self> satisfies Identifiable given Self satisfies MetaEqualable<Self> {
+    "equals по всем полям [[Self]]"
     shared actual Boolean equals(Object that) {
         if (is Self that) {
-            Anything[] fieldsFromThis = fieldsInObject(this);
-            Anything[] fieldsFromThat = fieldsInObject(that);
-            print(type(this));
-            print(type(that));
-            print("``fieldsFromThis`` <=> ``fieldsFromThis``");
-            return everyPair(equalsWithNull, fieldsFromThis, fieldsFromThat);
+            return everyPair(equalsWithNull, allFields, that.allFields);
         }
         else {
             return false;
         }
     }
 
+    "hash по всем полям [[Self]]"
     shared actual Integer hash {
         variable value hash = 1;
-        for(field in fieldsInObject(this)){
+        for(field in allFields){
             hash = 31*hash + (field?.hash else 0);
         }
         return hash;
+    }
+
+    "Все поля, по которым идёт сравнение на equals и hash"
+    see(`function fieldsInObject`)
+    shared Anything[] allFields {
+        //Note: без этого не работает
+        "Приведение к самому себе"
+        assert(is Self reallyThis = this);
+        return fieldsInObject(reallyThis);
     }
 }

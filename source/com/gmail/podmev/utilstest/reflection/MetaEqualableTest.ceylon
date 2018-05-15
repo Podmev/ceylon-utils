@@ -7,7 +7,8 @@ import ceylon.test {
 }
 
 import com.gmail.podmev.utils.reflection {
-    MetaEqualable
+    MetaEqualable,
+    fieldsInObject
 }
 
 see(`interface MetaEqualable`)
@@ -30,8 +31,8 @@ class MetaEqualableTest() {
             assertAll(
                 [
                     ()=>assertEquals(Person1(1,"abc", true), Person1(1,"abc", true))
-//                    ,()=>assertNotEquals(Person1(1,"abc", null), Person1(1,"abc", true))
-//                    ,()=>assertNotEquals(Person1(1,"abc", true), Person2(1,"abc",154.0, true))
+                    ,()=>assertNotEquals(Person1(1,"abc", null), Person1(1,"abc", true))
+                    ,()=>assertNotEquals(Person1(1,"abc", true), Person2(1,"abc",154.0, true))
                 ]
             );
 
@@ -44,7 +45,18 @@ class MetaEqualableTest() {
                             ()=>assertNotEquals(Person1(1,"abc", true).hash, Person2(1,"abc",154.0, true).hash)
                 ]
             );
+
+    test
+    shared void positiveAllFieldsTest() =>
+            assertAll(
+                [
+                    ()=>assertEquals(Person1(1, "abc", true).allFields, ["abc", true, 1]),
+                    ()=>assertEquals(Person1(1, "abc", null).allFields, ["abc", null, 1]),
+                    ()=>assertEquals(Person2(1, "abc", 154.0, null).allFields, ["abc", null, 1, 154.0])
+                ]
+            );
 }
 
-shared void runMetaEqualableTest()=>
-    print(createTestRunner([`MetaEqualableTest.positiveEqualsTest`]).run());
+shared void runMetaEqualableTest() {
+    print(createTestRunner([`MetaEqualableTest`]).run());
+}
