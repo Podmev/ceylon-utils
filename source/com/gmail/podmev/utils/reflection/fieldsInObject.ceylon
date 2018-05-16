@@ -22,27 +22,6 @@ shared Anything[] fieldsInObject<ContainerType>(ContainerType containerObject) {
     return fields;
 }
 
-"Достать все поля из объекта, определённые прямо в классе, кроме hash и equals
- Порядок недетерминирован, но идёт в одном порядке для объектов одного и того же класса"
-tagged("hasTest")
-shared Anything[] fieldsInObjectWithPrints<ContainerType>(ContainerType containerObject) {
-    ClassModel<ContainerType, Nothing> classModel = type(containerObject);
-    print("qualifiedName:``classModel.declaration.qualifiedName``");
-    Attribute<ContainerType, Anything, Nothing>[] declaredAttributes = classModel.getDeclaredAttributes<ContainerType, Anything>();
-    print("declaredAttributes: ``declaredAttributes``");
-    Attribute<ContainerType, Anything, Nothing>[] selectedDeclaredAttributes =
-            [for(declaredAttribute in declaredAttributes)
-            if(!declaredAttribute.declaration.name in {"string", "hash"})
-            declaredAttribute
-            ];
-    print("selectedDeclaredAttributes: ``selectedDeclaredAttributes``");
-    Anything[] fields = [for(selectedByTagDeclaredAttribute in selectedDeclaredAttributes)
-    selectedByTagDeclaredAttribute.bind(containerObject).get()
-    ];
-    print("fields: ``fields``");
-    return fields;
-}
-
 class Person(
     shared Integer age,
     shared String name,

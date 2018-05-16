@@ -10,9 +10,10 @@ import com.gmail.podmev.utils {
             class Person(
                 shared Integer age,
                 shared String name,
-                shared Boolean? married) satisfies MetaEqualable<Person1> {}
+                shared Boolean? married) satisfies MetaEqualable<Person> {}
 
   Тогда верно, что
+
             assertEquals(Person(1,\"abc\", true), Person(1,\"abc\", true))
  "
 see(
